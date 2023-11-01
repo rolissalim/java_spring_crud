@@ -60,7 +60,6 @@ public class UserController {
                     .save(new User(
                             user.getName(),
                             user.getEmail(),
-                            user.getRoleId(),
                             user.getPassword(),
                             user.getCreatedAt(),
                             user.getUpdatedAt()));
@@ -78,7 +77,6 @@ public class UserController {
             User _user = data.get();
             _user.setName(user.getName());
             _user.setEmail(user.getEmail());
-            _user.setRoleId(user.getRoleId());
             return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -20,7 +21,7 @@ public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false)
+    @Column(updatable = false,length = 36)
     private String id;
 
     private String name;
@@ -28,9 +29,10 @@ public class User implements Serializable {
     @Column(unique = true)
     private String email;
 
-    private Integer role_id;
-
     private String password;
+
+    @ManyToOne
+    private Role roles;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -40,15 +42,22 @@ public class User implements Serializable {
     @Column(name = "updated_at", updatable = false)
     private Timestamp updated_at;
 
+    public Role getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Role roles) {
+        this.roles = roles;
+    }
+
     public User() {
 
     }
 
-    public User(String name, String email, Integer role_id, String password, Timestamp created_at,
+    public User(String name, String email, String password, Timestamp created_at,
             Timestamp updated_at) {
         this.name = name;
         this.email = email;
-        this.role_id = role_id;
         this.password = password;
         this.created_at = created_at;
         this.updated_at = updated_at;
@@ -72,14 +81,6 @@ public class User implements Serializable {
 
     public String getEmail() {
         return this.email;
-    }
-
-    public void setRoleId(Integer role_id) {
-        this.role_id = role_id;
-    }
-
-    public Integer getRoleId() {
-        return this.role_id;
     }
 
     public void password(String password) {
