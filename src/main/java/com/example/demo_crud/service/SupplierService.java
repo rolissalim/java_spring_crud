@@ -1,5 +1,7 @@
 package com.example.demo_crud.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,15 +20,18 @@ public class SupplierService {
         return supplierRepository.save(supplier);
     }
 
+    public Supplier findById(String id) {
+        Optional<Supplier> product = supplierRepository.findById(id);
+        if (!product.isPresent())
+            return null;
+        return supplierRepository.findById(id).get();
+    }
+
     public Iterable<Supplier> findAll() {
         return supplierRepository.findAll();
     }
 
-    public Supplier findById(String id) {
-        return supplierRepository.findById(id).get();
-    }
-
-    public void deleteById(String id) {
+    public void removeOne(String id) {
         supplierRepository.deleteById(id);
     }
 }

@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController()
 @RequestMapping("/api/roles")
-@Tag(name = "Users", description = "Data roles")
+@Tag(name = "Roles", description = "Data roles")
 public class RoleController {
     
     @Autowired

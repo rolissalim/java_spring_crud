@@ -21,7 +21,7 @@ public class ResponseData<T> {
     public void setMessage(List<String> message) {
         this.message = message;
     }
-    public T getPayload() {
+    public T getData() {
         return data;
     }
     public void setData(T data) {
