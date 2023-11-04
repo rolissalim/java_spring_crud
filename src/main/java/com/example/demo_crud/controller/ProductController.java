@@ -55,6 +55,8 @@ public class ProductController {
             responseData.setData(null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
+        System.out.println("ResponeProduct id");
+        System.out.println(requestProduct.getCategory_id());
         responseData.setStatus(false);
         ResponeProduct responeProduct = modelMapper.map(productService.save(product, requestProduct),
                 ResponeProduct.class);

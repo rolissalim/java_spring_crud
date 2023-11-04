@@ -12,7 +12,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.util.Set;
@@ -32,8 +31,6 @@ public class Product implements Serializable {
 
     private String description;
 
-    @NotEmpty(message = "Name is required")
-    @DecimalMin(value = "0", message = "Min 0")
     private double price;
 
     @ManyToOne

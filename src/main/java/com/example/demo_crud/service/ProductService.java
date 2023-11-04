@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.example.demo_crud.entity.Category;
 import com.example.demo_crud.entity.Product;
 import com.example.demo_crud.model.RequestProduct;
-import com.example.demo_crud.repository.CategoryRepository;
 import com.example.demo_crud.repository.ProductRepository;
 
 import jakarta.transaction.Transactional;
@@ -25,13 +24,14 @@ public class ProductService {
     private ModelMapper modelMapper;
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    private CategoryService categoryService;
 
     public Product save(Product product, RequestProduct requestProduct) {
         try {
             Category category = new Category();
-            category = modelMapper.map(categoryRepository.findById(requestProduct.getCategory_id()), Category.class);
-            product.setCategory(category);
+            category = modelMapper.map(categoryService.findById(requestProduct.getCategory_id()), Category.class);
+            if (!category.getId().equals(null))
+                product.setCategory(category);
 
         } catch (Exception e) {
             // TODO: handle exception
