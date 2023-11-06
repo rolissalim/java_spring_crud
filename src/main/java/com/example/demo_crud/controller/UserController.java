@@ -2,11 +2,13 @@ package com.example.demo_crud.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,67 +21,135 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo_crud.entity.User;
+import com.example.demo_crud.model.ResponseData;
+import com.example.demo_crud.model.ResponseUser;
 import com.example.demo_crud.repository.UserRepository;
+import com.example.demo_crud.service.UserService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import org.springframework.http.MediaType;
-
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "http://localhost:7071")
 @RestController()
 @RequestMapping("/api/users")
 @Tag(name = "Users", description = "Data users")
 public class UserController {
 
     @Autowired
-    UserRepository userRepository;
+    private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @GetMapping()
-    public ResponseEntity<List<User>> getData(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Integer role_id,
+    public ResponseEntity<List<ResponseUser>> getData(
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false, defaultValue = "") String order,
             @RequestParam(defaultValue = "0") Integer start,
             @RequestParam(defaultValue = "10") Integer limit) {
-        try {
-            List<User> users = new ArrayList<User>();
 
-            if (users.isEmpty()) {
+        try {
+            List<ResponseUser> responseUsers = new ArrayList<ResponseUser>();
+            responseUsers = userService.findDataByParams(keyword, order, start, limit);
+
+            if (responseUsers.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
 
-            return new ResponseEntity<>(users, HttpStatus.OK);
+            return new ResponseEntity<>(responseUsers, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping()
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    public ResponseEntity<ResponseData<ResponseUser>> create(@RequestBody User user, Errors errors) {
+        ResponseData<ResponseUser> responseData = new ResponseData<>();
+        ResponseUser responseUser = new ResponseUser();
         try {
             // user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-            User _user = userRepository
+            User _user = userService
                     .save(new User(
                             user.getName(),
                             user.getEmail(),
                             user.getPassword(),
                             user.getCreatedAt(),
                             user.getUpdatedAt()));
-            return new ResponseEntity<>(_user, HttpStatus.CREATED);
+
+            if (errors.hasErrors()) {
+                responseData.setStatus(false);
+                responseData.setData(null);
+                for (ObjectError error : errors.getAllErrors()) {
+                    responseData.getMessage().add(error.getDefaultMessage());
+                }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+            }
+
+            responseData.setStatus(true);
+            responseUser = modelMapper.map(userService.save(_user), ResponseUser.class);
+
+            responseData.setData(responseUser);
+            responseData.getMessage().add("Data berhasil disimpan");
+            return new ResponseEntity<>(responseData, HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(user, HttpStatus.INTERNAL_SERVER_ERROR);
+            responseData.getMessage().add("Save failed");
+            modelMapper.map(user, responseUser);
+            return new ResponseEntity<>(responseData, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> updateUser(@PathVariable("id") String id, @RequestBody User user) {
-        Optional<User> data = userRepository.findById(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseData<ResponseUser>> update(@PathVariable("id") String id, @RequestBody User user,
+            Errors errors) {
+        ResponseData<ResponseUser> responseData = new ResponseData<>();
+        ResponseUser responseUser = new ResponseUser();
+        try {
+            // user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+            User _user = userService.findById(id);
 
-        if (data.isPresent()) {
-            User _user = data.get();
-            _user.setName(user.getName());
-            _user.setEmail(user.getEmail());
-            return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            if (errors.hasErrors()) {
+                responseData.setStatus(false);
+                responseData.setData(null);
+                for (ObjectError error : errors.getAllErrors()) {
+                    responseData.getMessage().add(error.getDefaultMessage());
+                }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+            }
+
+            responseData.setStatus(true);
+            responseUser = modelMapper.map(userService.save(_user), ResponseUser.class);
+
+            responseData.setData(responseUser);
+            responseData.getMessage().add("save success");
+            return new ResponseEntity<>(responseData, HttpStatus.CREATED);
+        } catch (Exception e) {
+            responseData.getMessage().add("Save failed");
+            modelMapper.map(user, responseUser);
+            return new ResponseEntity<>(responseData, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseData<ResponseUser>> getDetail(@PathVariable("id") String id, @RequestBody User user,
+            Errors errors) {
+        ResponseData<ResponseUser> responseData = new ResponseData<>();
+        ResponseUser responseUser = new ResponseUser();
+        try {
+            // user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+            User _user = userService.findById(id);
+
+            responseData.setStatus(true);
+            responseUser = modelMapper.map(userService.save(_user), ResponseUser.class);
+
+            responseData.setData(responseUser);
+            responseData.getMessage().add("save success");
+            return new ResponseEntity<>(responseData, HttpStatus.CREATED);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.getMessage().add("Data not found");
+            responseData.setData(null);
+            return new ResponseEntity<>(responseData, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

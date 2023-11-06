@@ -1,7 +1,7 @@
 package com.example.demo_crud.controller;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,39 +20,45 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo_crud.entity.Role;
 import com.example.demo_crud.repository.RoleRepository;
+import com.example.demo_crud.service.RoleService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController()
 @RequestMapping("/api/roles")
 @Tag(name = "Roles", description = "Data roles")
 public class RoleController {
-    
+
     @Autowired
-    RoleRepository categoryRepository;
+    RoleRepository roleRepository;
+
+    @Autowired
+    RoleService roleService;
 
     @GetMapping()
     public ResponseEntity<List<Role>> getData(
-            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") Integer start,
             @RequestParam(defaultValue = "10") Integer limit) {
         try {
-            List<Role> cateogries = new ArrayList<Role>();
+            List<Role> data = new ArrayList<>();
+            data = roleService.findDataByParams(keyword, start, limit);
 
-            if (cateogries.isEmpty()) {
+            if (data.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
 
-            return new ResponseEntity<>(cateogries, HttpStatus.OK);
+            return new ResponseEntity<>(data, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping()
-    public ResponseEntity<Role> createRole(@RequestBody Role role) {
+    public ResponseEntity<Role> create(@RequestBody Role role) {
         try {
-            Role _role = categoryRepository
+            Role _role = roleService
                     .save(new Role(role.getName()));
             return new ResponseEntity<>(_role, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -61,13 +67,10 @@ public class RoleController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Role> updateRole(@PathVariable("id") Integer id, @RequestBody Role role) {
-        Optional<Role> data = categoryRepository.findById(id);
-
-        if (data.isPresent()) {
-            Role _role = data.get();
-            _role.setName(role.getName());
-            return new ResponseEntity<>(categoryRepository.save(_role), HttpStatus.OK);
+    public ResponseEntity<Role> update(@PathVariable("id") Integer id, @RequestBody Role role) {
+        Role data = roleService.findById(id);
+        if (data != null) {
+            return new ResponseEntity<>(roleRepository.save(data), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -76,7 +79,7 @@ public class RoleController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<HttpStatus> deleteRole(@PathVariable("id") Integer id) {
         try {
-            categoryRepository.deleteById(id);
+            roleRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

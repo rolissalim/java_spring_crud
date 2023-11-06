@@ -1,5 +1,8 @@
 package com.example.demo_crud.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo_crud.entity.Supplier;
@@ -36,8 +40,23 @@ public class SupplierController {
     private ModelMapper modelMapper;
 
     @GetMapping()
-    public Iterable<Supplier> findAll() {
-        return supplierService.findAll();
+    public ResponseEntity<List<Supplier>> getData(
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false, defaultValue = "") String order,
+            @RequestParam(defaultValue = "0") Integer start,
+            @RequestParam(defaultValue = "10") Integer limit) {
+
+        try {
+            List<Supplier> data = new ArrayList<>();
+            data = supplierService.findDataByParams(keyword, order, start, limit);
+
+            if (data.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping()
@@ -61,8 +80,20 @@ public class SupplierController {
     }
 
     @GetMapping("/{id}")
-    public Supplier findById(@PathVariable("id") String id) {
-        return supplierService.findById(id);
+    public ResponseEntity<ResponseData<Supplier>> findById(@PathVariable("id") String id) {
+        ResponseData<Supplier> responseData = new ResponseData<>();
+        try {
+            Supplier supllier = supplierService.findById(id);
+            responseData.setStatus(true);
+            responseData.setData(supllier);
+            responseData.getMessage().add("Save success");
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.getMessage().add("Data not found");
+            return ResponseEntity.ok(responseData);
+        }
+
     }
 
     @PutMapping("/{id}")
@@ -82,7 +113,7 @@ public class SupplierController {
 
         responseData.setStatus(true);
         responseData.setData(supplierService.save(supplier));
-        responseData.getMessage().add("Data berhasil disimpan");
+        responseData.getMessage().add("Save success");
 
         return ResponseEntity.ok(responseData);
     }

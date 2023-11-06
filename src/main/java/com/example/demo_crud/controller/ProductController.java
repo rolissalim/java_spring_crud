@@ -1,5 +1,8 @@
 package com.example.demo_crud.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,12 +17,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo_crud.entity.Product;
+import com.example.demo_crud.entity.Supplier;
 import com.example.demo_crud.helper.HandleError;
 import com.example.demo_crud.model.RequestProduct;
-import com.example.demo_crud.model.ResponeProduct;
+import com.example.demo_crud.model.ResponseProduct;
 import com.example.demo_crud.model.ResponseData;
 import com.example.demo_crud.service.ProductService;
 
@@ -38,31 +43,54 @@ public class ProductController {
     private ModelMapper modelMapper;
 
     @GetMapping()
-    public Iterable<Product> findAll() {
-        return productService.findAll();
+    public ResponseEntity<List<Product>> getData(
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false, defaultValue = "") String order,
+            @RequestParam(defaultValue = "0") Integer start,
+            @RequestParam(defaultValue = "10") Integer limit) {
+
+        try {
+            List<Product> data = new ArrayList<>();
+            data = productService.findDataByParams(keyword, order, start, limit);
+
+            if (data.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            // List<ResponseProduct> datas = new ArrayList<>();
+            // List<ResponseProduct> datas = modelMapper.map(data, datas);
+            // responseData.setStatus(true);
+            // responseData.setData(modelMapper.map(data, datas))
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseData<ResponeProduct>> create(@Valid @RequestBody RequestProduct requestProduct,
+    public ResponseEntity<ResponseData<ResponseProduct>> create(@Valid @RequestBody RequestProduct requestProduct,
             Errors errors) {
-        ResponseData<ResponeProduct> responseData = new ResponseData<>();
-        Product product = modelMapper.map(requestProduct, Product.class);
-        if (errors.hasErrors()) {
-            HandleError handleError = new HandleError(errors);
+        ResponseData<ResponseProduct> responseData = new ResponseData<>();
+        try {
+            Product product = modelMapper.map(requestProduct, Product.class);
+            if (errors.hasErrors()) {
+                HandleError handleError = new HandleError(errors);
 
-            responseData.setMessage(handleError.getError());
-            responseData.setStatus(false);
-            responseData.setData(null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+                responseData.setMessage(handleError.getError());
+                responseData.setStatus(false);
+                responseData.setData(null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+            }
+
+            ResponseProduct responeProduct = modelMapper.map(productService.save(product, requestProduct),
+                    ResponseProduct.class);
+            responseData.setData(responeProduct);
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+
         }
-        System.out.println("ResponeProduct id");
-        System.out.println(requestProduct.getCategory_id());
         responseData.setStatus(false);
-        ResponeProduct responeProduct = modelMapper.map(productService.save(product, requestProduct),
-                ResponeProduct.class);
-        responseData.setData(responeProduct);
-        return ResponseEntity.ok(responseData);
-
+        responseData.setData(null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
     }
 
     @GetMapping("/{id}")
@@ -71,9 +99,9 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseData<ResponeProduct>> update(@PathVariable Long id,
+    public ResponseEntity<ResponseData<ResponseProduct>> update(@PathVariable Long id,
             @Valid @RequestBody RequestProduct requestProduct, Errors errors) {
-        ResponseData<ResponeProduct> responseData = new ResponseData<>();
+        ResponseData<ResponseProduct> responseData = new ResponseData<>();
         Product product = modelMapper.map(requestProduct, Product.class);
         product.setId(id);
         if (errors.hasErrors()) {
@@ -86,11 +114,16 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
         responseData.setStatus(false);
-        ResponeProduct responeProduct = modelMapper.map(productService.save(product, requestProduct),
-                ResponeProduct.class);
+        ResponseProduct responeProduct = modelMapper.map(productService.save(product, requestProduct),
+                ResponseProduct.class);
         responseData.setData(responeProduct);
         return ResponseEntity.ok(responseData);
 
+    }
+
+    @PostMapping("/add-suppliers/{id}")
+    public void addSupplier(@RequestBody Supplier supplier, @PathVariable("id") String productId) {
+        productService.addSupplier(supplier, productId);
     }
 
     @DeleteMapping("/{id}")

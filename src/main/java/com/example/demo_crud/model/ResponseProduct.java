@@ -5,7 +5,7 @@ import com.example.demo_crud.entity.Category;
 
 import jakarta.persistence.ManyToOne;
 
-public class ResponeProduct {
+public class ResponseProduct {
 
     private Long id;
 
@@ -20,10 +20,10 @@ public class ResponeProduct {
 
     private Long category_id;
 
-    public ResponeProduct() {
+    public ResponseProduct() {
     }
 
-    public ResponeProduct(Long id, String name, String description, double price, Category category, Long category_id) {
+    public ResponseProduct(Long id, String name, String description, double price, Category category, Long category_id) {
         this.id = id;
         this.name = name;
         this.description = description;

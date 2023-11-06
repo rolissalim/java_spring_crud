@@ -1,5 +1,6 @@
 package com.example.demo_crud.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo_crud.entity.Category;
 import com.example.demo_crud.entity.Product;
+import com.example.demo_crud.entity.Supplier;
 import com.example.demo_crud.model.RequestProduct;
 import com.example.demo_crud.repository.ProductRepository;
 
@@ -26,6 +28,10 @@ public class ProductService {
     @Autowired
     private CategoryService categoryService;
 
+    public List<Product> findDataByParams(String keyword, String order, Integer start, Integer limit) {
+        return productRepository.findDataByParams(keyword);
+    }
+
     public Product save(Product product, RequestProduct requestProduct) {
         try {
             Category category = new Category();
@@ -34,9 +40,13 @@ public class ProductService {
                 product.setCategory(category);
 
         } catch (Exception e) {
-            // TODO: handle exception
+            product.setCategory(null);
         }
 
+        return productRepository.save(product);
+    }
+
+    public Product saveWithSupplier(Product product) {
         return productRepository.save(product);
     }
 
@@ -47,11 +57,16 @@ public class ProductService {
         return productRepository.findById(id).get();
     }
 
-    public Iterable<Product> findAll() {
-        return productRepository.findAll();
-    }
-
     public void removeOne(String id) {
         productRepository.deleteById(id);
+    }
+
+    public void addSupplier(Supplier supplier, String productId) {
+        Product product = findById(productId);
+        if (product == null)
+            throw new RuntimeException("Data not found");
+        product.getSuppliers().add(supplier);
+        saveWithSupplier(product);
+
     }
 }

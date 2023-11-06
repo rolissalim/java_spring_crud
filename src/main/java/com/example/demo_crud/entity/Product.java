@@ -92,5 +92,13 @@ public class Product implements Serializable {
         this.category = category;
     }
 
+    public Set<Supplier> getSuppliers() {
+        return suppliers;
+    }
+
+    public void setSuppliers(Set<Supplier> suppliers) {
+        this.suppliers = suppliers;
+    }
+
 }
 
