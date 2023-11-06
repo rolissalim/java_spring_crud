@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo_crud.entity.Supplier;
 import com.example.demo_crud.model.ResponseData;
+import com.example.demo_crud.model.ResponseDataPaging;
 import com.example.demo_crud.model.SupplierData;
 import com.example.demo_crud.service.SupplierService;
 
@@ -40,21 +41,31 @@ public class SupplierController {
     private ModelMapper modelMapper;
 
     @GetMapping()
-    public ResponseEntity<List<Supplier>> getData(
+    public ResponseEntity<ResponseDataPaging<List<Supplier>>> getData(
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(required = false, defaultValue = "") String order,
             @RequestParam(defaultValue = "0") Integer start,
             @RequestParam(defaultValue = "10") Integer limit) {
 
+        ResponseDataPaging<List<Supplier>> responseData = new ResponseDataPaging<>();
+        Long count = 0L;
         try {
             List<Supplier> data = new ArrayList<>();
             data = supplierService.findDataByParams(keyword, order, start, limit);
-
+            count = supplierService.countData(keyword);
             if (data.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                responseData.setCount(count);
+                responseData.setStatus(true);
+                responseData.setData(null);
+                return new ResponseEntity<>(responseData, HttpStatus.OK);
             }
-            return new ResponseEntity<>(data, HttpStatus.OK);
+            responseData.setStatus(true);
+            responseData.setData(data);
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
         } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.setData(null);
+            responseData.setCount(count);
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

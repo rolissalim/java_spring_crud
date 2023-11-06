@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo_crud.entity.Role;
+import com.example.demo_crud.model.ResponseDataPaging;
 import com.example.demo_crud.repository.RoleRepository;
 import com.example.demo_crud.service.RoleService;
 
@@ -37,20 +38,29 @@ public class RoleController {
     RoleService roleService;
 
     @GetMapping()
-    public ResponseEntity<List<Role>> getData(
+    public ResponseEntity<ResponseDataPaging<List<Role>>> getData(
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") Integer start,
             @RequestParam(defaultValue = "10") Integer limit) {
+        ResponseDataPaging<List<Role>> responseData = new ResponseDataPaging<>();
+        Long count = 0L;
         try {
             List<Role> data = new ArrayList<>();
             data = roleService.findDataByParams(keyword, start, limit);
-
+            count = roleService.countData(keyword);
             if (data.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                responseData.setCount(count);
+                responseData.setStatus(true);
+                responseData.setData(null);
+                return new ResponseEntity<>(responseData, HttpStatus.OK);
             }
-
-            return new ResponseEntity<>(data, HttpStatus.OK);
+            responseData.setStatus(true);
+            responseData.setData(data);
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
         } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.setData(null);
+            responseData.setCount(count);
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -67,7 +77,7 @@ public class RoleController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Role> update(@PathVariable("id") Integer id, @RequestBody Role role) {
+    public ResponseEntity<Role> update(@PathVariable("id") Long id, @RequestBody Role role) {
         Role data = roleService.findById(id);
         if (data != null) {
             return new ResponseEntity<>(roleRepository.save(data), HttpStatus.OK);
@@ -77,7 +87,7 @@ public class RoleController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<HttpStatus> deleteRole(@PathVariable("id") Integer id) {
+    public ResponseEntity<HttpStatus> deleteRole(@PathVariable("id") Long id) {
         try {
             roleRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

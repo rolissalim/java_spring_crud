@@ -26,6 +26,7 @@ import com.example.demo_crud.helper.HandleError;
 import com.example.demo_crud.model.RequestProduct;
 import com.example.demo_crud.model.ResponseProduct;
 import com.example.demo_crud.model.ResponseData;
+import com.example.demo_crud.model.ResponseDataPaging;
 import com.example.demo_crud.service.ProductService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,25 +44,31 @@ public class ProductController {
     private ModelMapper modelMapper;
 
     @GetMapping()
-    public ResponseEntity<List<Product>> getData(
+    public ResponseEntity<ResponseDataPaging<List<Product>>> getData(
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(required = false, defaultValue = "") String order,
             @RequestParam(defaultValue = "0") Integer start,
             @RequestParam(defaultValue = "10") Integer limit) {
 
+        ResponseDataPaging<List<Product>> responseData = new ResponseDataPaging<>();
+        Long count = 0L;
         try {
             List<Product> data = new ArrayList<>();
             data = productService.findDataByParams(keyword, order, start, limit);
-
+            count = productService.countData(keyword);
             if (data.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                responseData.setCount(count);
+                responseData.setStatus(true);
+                responseData.setData(null);
+                return new ResponseEntity<>(responseData, HttpStatus.OK);
             }
-            // List<ResponseProduct> datas = new ArrayList<>();
-            // List<ResponseProduct> datas = modelMapper.map(data, datas);
-            // responseData.setStatus(true);
-            // responseData.setData(modelMapper.map(data, datas))
-            return new ResponseEntity<>(data, HttpStatus.OK);
+            responseData.setStatus(true);
+            responseData.setData(data);
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
         } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.setData(null);
+            responseData.setCount(count);
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

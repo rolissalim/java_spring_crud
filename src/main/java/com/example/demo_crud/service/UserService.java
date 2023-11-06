@@ -21,11 +21,16 @@ public class UserService {
     @Autowired
     private ModelMapper modelMapper;
 
+    public Long countData(String keyword) {
+        return userRepository.countFindDataByParams(keyword);
+    }
+
     public List<ResponseUser> findDataByParams(String keyword, String order, Integer start, Integer limit) {
         List<User> users = new ArrayList<User>();
         List<ResponseUser> responseUsers = new ArrayList<ResponseUser>();
         try {
             users = userRepository.findDataByParams(keyword);
+
             modelMapper.map(users, responseUsers);
         } catch (Exception e) {
             // TODO: handle exception

@@ -8,8 +8,11 @@ import com.example.demo_crud.entity.Role;
 import java.util.List;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Role, Integer> {
+public interface RoleRepository extends JpaRepository<Role, Long> {
     // @Query("SELECT r Role r WHERE r.name LIKE :keyword%")
-    List<Role> findByNameContains(String keyword);
+    List<Role> findByNameContains(String name);
+
+    // @Query("SELECT p FROM Role p WHERE p.name LIKE :name%")
+    Long countByNameContains(String name);
 
 }

@@ -16,6 +16,10 @@ public class RoleService {
     @Autowired
     private RoleRepository roleRepository;
 
+    public Long countData(String keyword) {
+        return roleRepository.countByNameContains(keyword);
+    }
+
     public List<Role> findDataByParams(String keyword, Integer start, Integer limit) {
         return roleRepository.findByNameContains(keyword);
     }
@@ -28,11 +32,11 @@ public class RoleService {
         return roleRepository.findAll();
     }
 
-    public Role findById(Integer id) {
+    public Role findById(Long id) {
         return roleRepository.findById(id).get();
     }
 
-    public void deleteById(Integer id) {
+    public void deleteById(Long id) {
         roleRepository.deleteById(id);
     }
 

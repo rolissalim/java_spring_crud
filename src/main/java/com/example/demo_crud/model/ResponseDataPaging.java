@@ -2,13 +2,13 @@ package com.example.demo_crud.model;
 
 public class ResponseDataPaging<T> extends ResponseData<T> {
 
-    private Integer count;
+    private Long count;
 
-    public Integer getCount() {
+    public Long getCount() {
         return count;
     }
 
-    public void setCount(Integer count) {
+    public void setCount(Long count) {
         this.count = count;
     }
 

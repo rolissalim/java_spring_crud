@@ -17,6 +17,10 @@ public class SupplierService {
     @Autowired
     private SupplierRepository supplierRepository;
 
+    public Long countData(String keyword) {
+        return supplierRepository.countFindDataByParams(keyword);
+    }
+
     public List<Supplier> findDataByParams(String keyword, String order, Integer start,
             Integer limit) {
         return supplierRepository.findDataByParams(keyword);

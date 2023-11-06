@@ -28,6 +28,10 @@ public class ProductService {
     @Autowired
     private CategoryService categoryService;
 
+    public Long countData(String keyword) {
+        return productRepository.countFindDataByParams(keyword);
+    }
+
     public List<Product> findDataByParams(String keyword, String order, Integer start, Integer limit) {
         return productRepository.findDataByParams(keyword);
     }

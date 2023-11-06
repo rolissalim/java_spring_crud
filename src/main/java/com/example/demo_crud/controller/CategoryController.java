@@ -1,5 +1,8 @@
 package com.example.demo_crud.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,11 +17,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo_crud.entity.Category;
 import com.example.demo_crud.model.CategoryData;
 import com.example.demo_crud.model.ResponseData;
+import com.example.demo_crud.model.ResponseDataPaging;
 import com.example.demo_crud.service.CategoryService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,8 +43,32 @@ public class CategoryController {
     private ModelMapper modelMapper;
 
     @GetMapping()
-    public Iterable<Category> findAll() {
-        return categoryService.findAll();
+    public ResponseEntity<ResponseDataPaging<List<Category>>> getData(
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false, defaultValue = "") String order,
+            @RequestParam(defaultValue = "0") Integer start,
+            @RequestParam(defaultValue = "10") Integer limit) {
+        ResponseDataPaging<List<Category>> responseData = new ResponseDataPaging<>();
+        Long count = 0L;
+        try {
+            List<Category> data = new ArrayList<>();
+            data = categoryService.findDataByParams(keyword, order, start, limit);
+            count = categoryService.countData(keyword);
+            if (data.isEmpty()) {
+                responseData.setCount(count);
+                responseData.setStatus(true);
+                responseData.setData(null);
+                return new ResponseEntity<>(responseData, HttpStatus.OK);
+            }
+            responseData.setStatus(true);
+            responseData.setData(data);
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.setData(null);
+            responseData.setCount(count);
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping()

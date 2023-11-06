@@ -1,5 +1,6 @@
 package com.example.demo_crud.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,14 @@ import jakarta.transaction.Transactional;
 public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
+
+    public Long countData(String keyword) {
+        return categoryRepository.countFindDataByParams(keyword);
+    }
+
+    public List<Category> findDataByParams(String keyword, String order, Integer start, Integer limit) {
+        return categoryRepository.findDataByParams(keyword);
+    }
 
     public Category save(Category category) {
         return categoryRepository.save(category);
