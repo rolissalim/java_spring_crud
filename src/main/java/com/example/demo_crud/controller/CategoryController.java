@@ -50,25 +50,25 @@ public class CategoryController {
             @RequestParam(defaultValue = "10") Integer limit) {
         ResponseDataPaging<List<Category>> responseData = new ResponseDataPaging<>();
         Long count = 0L;
-        try {
-            List<Category> data = new ArrayList<>();
-            data = categoryService.findDataByParams(keyword, order, start, limit);
-            count = categoryService.countData(keyword);
-            if (data.isEmpty()) {
-                responseData.setCount(count);
-                responseData.setStatus(true);
-                responseData.setData(null);
-                return new ResponseEntity<>(responseData, HttpStatus.OK);
-            }
-            responseData.setStatus(true);
-            responseData.setData(data);
-            return new ResponseEntity<>(responseData, HttpStatus.OK);
-        } catch (Exception e) {
-            responseData.setStatus(false);
-            responseData.setData(null);
+        // try {
+        List<Category> data = new ArrayList<>();
+        data = categoryService.findDataByParams(keyword, order, start, limit);
+        count = categoryService.countData(keyword);
+        if (data.isEmpty()) {
             responseData.setCount(count);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            responseData.setStatus(true);
+            responseData.setData(null);
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
         }
+        responseData.setStatus(true);
+        responseData.setData(data);
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
+        // } catch (Exception e) {
+        // responseData.setStatus(false);
+        // responseData.setData(null);
+        // responseData.setCount(count);
+        // return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        // }
     }
 
     @PostMapping()

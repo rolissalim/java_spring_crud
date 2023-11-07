@@ -53,7 +53,7 @@ public class ProductController {
         ResponseDataPaging<List<Product>> responseData = new ResponseDataPaging<>();
         Long count = 0L;
         try {
-            List<Product> data = new ArrayList<>();
+            List<Product> data = new ArrayList<Product>();
             data = productService.findDataByParams(keyword, order, start, limit);
             count = productService.countData(keyword);
             if (data.isEmpty()) {
