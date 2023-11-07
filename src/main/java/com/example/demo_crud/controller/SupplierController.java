@@ -1,10 +1,12 @@
 package com.example.demo_crud.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -43,29 +45,23 @@ public class SupplierController {
     @GetMapping()
     public ResponseEntity<ResponseDataPaging<List<Supplier>>> getData(
             @RequestParam(required = false, defaultValue = "") String keyword,
-            @RequestParam(required = false, defaultValue = "") String order,
-            @RequestParam(defaultValue = "0") Integer start,
+            @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer limit) {
-
         ResponseDataPaging<List<Supplier>> responseData = new ResponseDataPaging<>();
-        Long count = 0L;
         try {
-            List<Supplier> data = new ArrayList<>();
-            data = supplierService.findDataByParams(keyword, order, start, limit);
-            count = supplierService.countData(keyword);
-            if (data.isEmpty()) {
-                responseData.setCount(count);
-                responseData.setStatus(true);
-                responseData.setData(null);
-                return new ResponseEntity<>(responseData, HttpStatus.OK);
-            }
+            Pageable pageable = PageRequest.of(page - 1, limit);
+            Page<Supplier> data = supplierService.findPagingByParams(keyword, pageable);
+
             responseData.setStatus(true);
-            responseData.setData(data);
+            responseData.setData(data.getContent());
+            responseData.setCount(data.getNumberOfElements());
+            responseData.setCurrentPage(page);
+            responseData.setTotalPage(data.getTotalPages());
             return new ResponseEntity<>(responseData, HttpStatus.OK);
         } catch (Exception e) {
             responseData.setStatus(false);
             responseData.setData(null);
-            responseData.setCount(count);
+            responseData.setCount(0);
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

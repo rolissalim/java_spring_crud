@@ -28,7 +28,7 @@ public class ProductService {
     @Autowired
     private CategoryService categoryService;
 
-    public Long countData(String keyword) {
+    public Integer countData(String keyword) {
         return productRepository.countFindDataByParams(keyword);
     }
 
@@ -37,6 +37,7 @@ public class ProductService {
     }
 
     public Product save(Product product, RequestProduct requestProduct) {
+        modelMapper.map(requestProduct, product);
         try {
             Category category = new Category();
             category = modelMapper.map(categoryService.findById(requestProduct.getCategory_id()), Category.class);
@@ -44,7 +45,7 @@ public class ProductService {
                 product.setCategory(category);
 
         } catch (Exception e) {
-            product.setCategory(null);
+
         }
 
         return productRepository.save(product);

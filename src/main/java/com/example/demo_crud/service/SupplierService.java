@@ -1,9 +1,10 @@
 package com.example.demo_crud.service;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo_crud.entity.Supplier;
@@ -17,13 +18,8 @@ public class SupplierService {
     @Autowired
     private SupplierRepository supplierRepository;
 
-    public Long countData(String keyword) {
-        return supplierRepository.countFindDataByParams(keyword);
-    }
-
-    public List<Supplier> findDataByParams(String keyword, String order, Integer start,
-            Integer limit) {
-        return supplierRepository.findDataByParams(keyword);
+    public Page<Supplier> findPagingByParams(String keyword, Pageable pageable) {
+        return supplierRepository.findDataByParams(keyword, pageable);
     }
 
     public Supplier save(Supplier supplier) {

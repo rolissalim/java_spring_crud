@@ -1,10 +1,12 @@
 package com.example.demo_crud.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
@@ -21,7 +23,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo_crud.entity.User;
+import com.example.demo_crud.model.RequestUser;
 import com.example.demo_crud.model.ResponseData;
+import com.example.demo_crud.model.ResponseDataPaging;
 import com.example.demo_crud.model.ResponseUser;
 import com.example.demo_crud.repository.UserRepository;
 import com.example.demo_crud.service.UserService;
@@ -43,39 +47,36 @@ public class UserController {
     private ModelMapper modelMapper;
 
     @GetMapping()
-    public ResponseEntity<List<ResponseUser>> getData(
+    public ResponseEntity<ResponseDataPaging<List<User>>> getData(
             @RequestParam(required = false, defaultValue = "") String keyword,
-            @RequestParam(required = false, defaultValue = "") String order,
-            @RequestParam(defaultValue = "0") Integer start,
+            @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer limit) {
-
+        ResponseDataPaging<List<User>> responseData = new ResponseDataPaging<>();
         try {
-            List<ResponseUser> responseUsers = new ArrayList<ResponseUser>();
-            responseUsers = userService.findDataByParams(keyword, order, start, limit);
-
-            if (responseUsers.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-
-            return new ResponseEntity<>(responseUsers, HttpStatus.OK);
+            Pageable pageable = PageRequest.of(page - 1, limit);
+            Page<User> data = userService.findPagingByParams(keyword, pageable);
+            responseData.setStatus(true);
+            responseData.setData(data.getContent());
+            responseData.setCount(data.getNumberOfElements());
+            responseData.setCurrentPage(page);
+            responseData.setTotalPage(data.getTotalPages());
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
         } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.setData(null);
+            responseData.setCount(0);
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseData<ResponseUser>> create(@RequestBody User user, Errors errors) {
+    public ResponseEntity<ResponseData<ResponseUser>> create(@RequestBody RequestUser requestUser, Errors errors) {
         ResponseData<ResponseUser> responseData = new ResponseData<>();
         ResponseUser responseUser = new ResponseUser();
         try {
             // user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-            User _user = userService
-                    .save(new User(
-                            user.getName(),
-                            user.getEmail(),
-                            user.getPassword(),
-                            user.getCreatedAt(),
-                            user.getUpdatedAt()));
+            requestUser.setPassword(requestUser.getPassword());
+            User user = modelMapper.map(requestUser, User.class);
 
             if (errors.hasErrors()) {
                 responseData.setStatus(false);
@@ -87,20 +88,21 @@ public class UserController {
             }
 
             responseData.setStatus(true);
-            responseUser = modelMapper.map(userService.save(_user), ResponseUser.class);
+            responseUser = modelMapper.map(userService.save(user, requestUser), ResponseUser.class);
 
             responseData.setData(responseUser);
             responseData.getMessage().add("Data berhasil disimpan");
             return new ResponseEntity<>(responseData, HttpStatus.CREATED);
         } catch (Exception e) {
             responseData.getMessage().add("Save failed");
-            modelMapper.map(user, responseUser);
+            modelMapper.map(requestUser, responseUser);
             return new ResponseEntity<>(responseData, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseData<ResponseUser>> update(@PathVariable("id") String id, @RequestBody User user,
+    public ResponseEntity<ResponseData<ResponseUser>> update(@PathVariable("id") String id,
+            @RequestBody RequestUser requestUser,
             Errors errors) {
         ResponseData<ResponseUser> responseData = new ResponseData<>();
         ResponseUser responseUser = new ResponseUser();
@@ -118,29 +120,25 @@ public class UserController {
             }
 
             responseData.setStatus(true);
-            responseUser = modelMapper.map(userService.save(_user), ResponseUser.class);
+            responseUser = modelMapper.map(userService.save(_user, requestUser), ResponseUser.class);
 
             responseData.setData(responseUser);
             responseData.getMessage().add("save success");
             return new ResponseEntity<>(responseData, HttpStatus.CREATED);
         } catch (Exception e) {
             responseData.getMessage().add("Save failed");
-            modelMapper.map(user, responseUser);
+            modelMapper.map(requestUser, responseUser);
             return new ResponseEntity<>(responseData, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseData<ResponseUser>> getDetail(@PathVariable("id") String id, @RequestBody User user,
-            Errors errors) {
+    public ResponseEntity<ResponseData<ResponseUser>> getDetail(@PathVariable("id") String id) {
         ResponseData<ResponseUser> responseData = new ResponseData<>();
         ResponseUser responseUser = new ResponseUser();
         try {
-            // user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-            User _user = userService.findById(id);
-
             responseData.setStatus(true);
-            responseUser = modelMapper.map(userService.save(_user), ResponseUser.class);
+            responseUser = modelMapper.map(userService.findById(id), ResponseUser.class);
 
             responseData.setData(responseUser);
             responseData.getMessage().add("save success");

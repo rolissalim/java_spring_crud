@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
 
 @Entity
 @Table(name = "users")
@@ -21,7 +22,7 @@ public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(updatable = false,length = 36)
+    @Column(updatable = false, length = 36)
     private String id;
 
     private String name;
@@ -29,6 +30,7 @@ public class User implements Serializable {
     @Column(unique = true)
     private String email;
 
+    @NotEmpty(message = "Password is Required")
     private String password;
 
     @ManyToOne

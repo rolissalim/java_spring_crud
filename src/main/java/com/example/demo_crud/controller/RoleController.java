@@ -1,9 +1,11 @@
 package com.example.demo_crud.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,30 +39,45 @@ public class RoleController {
     @Autowired
     RoleService roleService;
 
+    // @GetMapping()
+    // public ResponseEntity<ResponseDataPaging<List<Role>>> getData(
+    // @RequestParam(required = false, defaultValue = "") String keyword,
+    // @RequestParam(defaultValue = "0") Integer page,
+    // @RequestParam(defaultValue = "10") Integer limit) {
+    // ResponseDataPaging<List<Role>> responseData = new ResponseDataPaging<>();
+    // Integer count = 0;
+    // try {
+    // Pageable pageable = PageRequest.of(page, limit);
+    // responseData = roleService.findDataByParams(keyword, pageable);
+    // return new ResponseEntity<>(responseData, HttpStatus.OK);
+    // } catch (Exception e) {
+    // responseData.setStatus(false);
+    // responseData.setData(null);
+    // responseData.setCount(count);
+    // return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+    // }
+    // }
+
     @GetMapping()
     public ResponseEntity<ResponseDataPaging<List<Role>>> getData(
             @RequestParam(required = false, defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "0") Integer start,
+            @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer limit) {
         ResponseDataPaging<List<Role>> responseData = new ResponseDataPaging<>();
-        Long count = 0L;
         try {
-            List<Role> data = new ArrayList<>();
-            data = roleService.findDataByParams(keyword, start, limit);
-            count = roleService.countData(keyword);
-            if (data.isEmpty()) {
-                responseData.setCount(count);
-                responseData.setStatus(true);
-                responseData.setData(null);
-                return new ResponseEntity<>(responseData, HttpStatus.OK);
-            }
+            Pageable pageable = PageRequest.of(page - 1, limit);
+            Page<Role> data = roleService.findPagingByParams(keyword, pageable);
+
             responseData.setStatus(true);
-            responseData.setData(data);
+            responseData.setData(data.getContent());
+            responseData.setCount(data.getNumberOfElements());
+            responseData.setCurrentPage(page);
+            responseData.setTotalPage(data.getTotalPages());
             return new ResponseEntity<>(responseData, HttpStatus.OK);
         } catch (Exception e) {
             responseData.setStatus(false);
             responseData.setData(null);
-            responseData.setCount(count);
+            responseData.setCount(0);
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -77,7 +94,7 @@ public class RoleController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Role> update(@PathVariable("id") Long id, @RequestBody Role role) {
+    public ResponseEntity<Role> update(@PathVariable("id") Integer id, @RequestBody Role role) {
         Role data = roleService.findById(id);
         if (data != null) {
             return new ResponseEntity<>(roleRepository.save(data), HttpStatus.OK);
@@ -87,7 +104,7 @@ public class RoleController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<HttpStatus> deleteRole(@PathVariable("id") Long id) {
+    public ResponseEntity<HttpStatus> deleteRole(@PathVariable("id") Integer id) {
         try {
             roleRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

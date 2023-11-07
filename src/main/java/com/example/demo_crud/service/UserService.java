@@ -1,14 +1,14 @@
 package com.example.demo_crud.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.example.demo_crud.entity.Role;
 import com.example.demo_crud.entity.User;
-import com.example.demo_crud.model.ResponseUser;
+import com.example.demo_crud.model.RequestUser;
 import com.example.demo_crud.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
@@ -19,28 +19,27 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
+    private RoleService roleService;
+
+    @Autowired
     private ModelMapper modelMapper;
 
-    public Long countData(String keyword) {
-        return userRepository.countFindDataByParams(keyword);
+    public Page<User> findPagingByParams(String keyword, Pageable pageable) {
+        return userRepository.findByNameContains(keyword, pageable);
+
     }
 
-    public List<ResponseUser> findDataByParams(String keyword, String order, Integer start, Integer limit) {
-        List<User> users = new ArrayList<User>();
-        List<ResponseUser> responseUsers = new ArrayList<ResponseUser>();
+    public User save(User user, RequestUser requestUser) {
+        modelMapper.map(requestUser, User.class);
         try {
-            users = userRepository.findDataByParams(keyword);
+            Role role = new Role();
+            role = modelMapper.map(roleService.findById(requestUser.getRole_id()), Role.class);
+            if (!role.getId().equals(null))
+                user.setRoles(role);
 
-            modelMapper.map(users, responseUsers);
         } catch (Exception e) {
-            // TODO: handle exception
+            // user.setRoles(null);
         }
-
-        return responseUsers;
-
-    }
-
-    public User save(User user) {
         return userRepository.save(user);
     }
 

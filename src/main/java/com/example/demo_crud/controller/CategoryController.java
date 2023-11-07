@@ -1,10 +1,12 @@
 package com.example.demo_crud.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -45,30 +47,25 @@ public class CategoryController {
     @GetMapping()
     public ResponseEntity<ResponseDataPaging<List<Category>>> getData(
             @RequestParam(required = false, defaultValue = "") String keyword,
-            @RequestParam(required = false, defaultValue = "") String order,
-            @RequestParam(defaultValue = "0") Integer start,
+            @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer limit) {
         ResponseDataPaging<List<Category>> responseData = new ResponseDataPaging<>();
-        Long count = 0L;
-        // try {
-        List<Category> data = new ArrayList<>();
-        data = categoryService.findDataByParams(keyword, order, start, limit);
-        count = categoryService.countData(keyword);
-        if (data.isEmpty()) {
-            responseData.setCount(count);
+        try {
+            Pageable pageable = PageRequest.of(page - 1, limit);
+            Page<Category> data = categoryService.findPagingByParams(keyword, pageable);
+
             responseData.setStatus(true);
-            responseData.setData(null);
+            responseData.setData(data.getContent());
+            responseData.setCount(data.getNumberOfElements());
+            responseData.setCurrentPage(page);
+            responseData.setTotalPage(data.getTotalPages());
             return new ResponseEntity<>(responseData, HttpStatus.OK);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.setData(null);
+            responseData.setCount(0);
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        responseData.setStatus(true);
-        responseData.setData(data);
-        return new ResponseEntity<>(responseData, HttpStatus.OK);
-        // } catch (Exception e) {
-        // responseData.setStatus(false);
-        // responseData.setData(null);
-        // responseData.setCount(count);
-        // return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        // }
     }
 
     @PostMapping()

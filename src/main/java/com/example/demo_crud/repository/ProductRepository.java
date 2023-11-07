@@ -12,5 +12,5 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     public List<Product> findDataByParams(String keyword);
 
     @Query("SELECT count(*) FROM Product p WHERE p.name LIKE :keyword%")
-    Long countFindDataByParams(String keyword);
+    Integer countFindDataByParams(String keyword);
 }

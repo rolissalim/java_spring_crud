@@ -51,7 +51,7 @@ public class ProductController {
             @RequestParam(defaultValue = "10") Integer limit) {
 
         ResponseDataPaging<List<Product>> responseData = new ResponseDataPaging<>();
-        Long count = 0L;
+        Integer count = 0;
         try {
             List<Product> data = new ArrayList<Product>();
             data = productService.findDataByParams(keyword, order, start, limit);
