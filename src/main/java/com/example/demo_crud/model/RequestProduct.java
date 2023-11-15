@@ -3,6 +3,7 @@ package com.example.demo_crud.model;
 import jakarta.validation.constraints.NotEmpty;
 
 public class RequestProduct {
+
     @NotEmpty(message = "Name is required")
     private String name;
 
@@ -10,7 +11,7 @@ public class RequestProduct {
     private String description;
 
     private Double price;
-    
+
     private Long category_id;
 
     public String getName() {

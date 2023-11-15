@@ -74,7 +74,7 @@ public class ProductController {
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseData<ResponseProduct>> create(@Valid @RequestBody RequestProduct requestProduct,
+    public ResponseEntity<ResponseData<ResponseProduct>> create(@Valid @RequestBody  RequestProduct requestProduct,
             Errors errors) {
         ResponseData<ResponseProduct> responseData = new ResponseData<>();
         try {
@@ -106,7 +106,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseData<ResponseProduct>> update(@PathVariable Long id,
+    public ResponseEntity<ResponseData<ResponseProduct>> update(@PathVariable String id,
             @Valid @RequestBody RequestProduct requestProduct, Errors errors) {
         ResponseData<ResponseProduct> responseData = new ResponseData<>();
         Product product = modelMapper.map(requestProduct, Product.class);

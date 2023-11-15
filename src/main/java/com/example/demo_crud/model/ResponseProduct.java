@@ -7,7 +7,7 @@ import jakarta.persistence.ManyToOne;
 
 public class ResponseProduct {
 
-    private Long id;
+    private String id;
 
     private String name;
 
@@ -23,7 +23,7 @@ public class ResponseProduct {
     public ResponseProduct() {
     }
 
-    public ResponseProduct(Long id, String name, String description, double price, Category category, Long category_id) {
+    public ResponseProduct(String id, String name, String description, double price, Category category, Long category_id) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -32,11 +32,11 @@ public class ResponseProduct {
         this.category_id = category_id;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
