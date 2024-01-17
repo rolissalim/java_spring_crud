@@ -26,14 +26,14 @@ public class SupplierService {
         return supplierRepository.save(supplier);
     }
 
-    public Supplier findById(String id) {
+    public Supplier findById(Long id) {
         Optional<Supplier> product = supplierRepository.findById(id);
         if (!product.isPresent())
             return null;
         return supplierRepository.findById(id).get();
     }
 
-    public void removeOne(String id) {
+    public void removeOne(Long id) {
         supplierRepository.deleteById(id);
     }
 }

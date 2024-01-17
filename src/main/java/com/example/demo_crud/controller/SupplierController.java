@@ -87,7 +87,7 @@ public class SupplierController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseData<Supplier>> findById(@PathVariable("id") String id) {
+    public ResponseEntity<ResponseData<Supplier>> findById(@PathVariable("id") Long id) {
         ResponseData<Supplier> responseData = new ResponseData<>();
         try {
             Supplier supllier = supplierService.findById(id);
@@ -126,7 +126,7 @@ public class SupplierController {
     }
 
     @DeleteMapping("/{id}")
-    public void removeOne(@PathVariable String id) {
+    public void removeOne(@PathVariable Long id) {
         supplierService.removeOne(id);
     }
 }

@@ -1,16 +1,17 @@
 package com.example.demo_crud.repository;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import com.example.demo_crud.entity.Product;
 
-public interface ProductRepository extends JpaRepository<Product, String> {
-    @Query("SELECT p FROM Product p WHERE p.name LIKE :keyword%")
-    public List<Product> findDataByParams(String keyword);
+public interface ProductRepository
+        extends PagingAndSortingRepository<Product, Long>, CrudRepository<Product, Long> {
 
-    @Query("SELECT count(*) FROM Product p WHERE p.name LIKE :keyword%")
-    Integer countFindDataByParams(String keyword);
+    @Query("SELECT p FROM Product p WHERE p.name LIKE :keyword%")
+    Page<Product> findDataByParams(String keyword, Pageable pageable);
+
 }

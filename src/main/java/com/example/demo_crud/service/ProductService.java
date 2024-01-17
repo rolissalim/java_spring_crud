@@ -1,10 +1,11 @@
 package com.example.demo_crud.service;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo_crud.entity.Category;
@@ -28,12 +29,8 @@ public class ProductService {
     @Autowired
     private CategoryService categoryService;
 
-    public Integer countData(String keyword) {
-        return productRepository.countFindDataByParams(keyword);
-    }
-
-    public List<Product> findDataByParams(String keyword, String order, Integer start, Integer limit) {
-        return productRepository.findDataByParams(keyword);
+    public Page<Product> findDataByParams(String keyword, Pageable pageable) {
+        return productRepository.findDataByParams(keyword, pageable);
     }
 
     public Product save(Product product, RequestProduct requestProduct) {
@@ -55,18 +52,18 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Product findById(String id) {
+    public Product findById(Long id) {
         Optional<Product> product = productRepository.findById(id);
         if (!product.isPresent())
             return null;
         return productRepository.findById(id).get();
     }
 
-    public void removeOne(String id) {
+    public void removeOne(Long id) {
         productRepository.deleteById(id);
     }
 
-    public void addSupplier(Supplier supplier, String productId) {
+    public void addSupplier(Supplier supplier, Long productId) {
         Product product = findById(productId);
         if (product == null)
             throw new RuntimeException("Data not found");

@@ -26,7 +26,7 @@ public class Product implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
-    private String id;
+    private Long id;
 
     @NotEmpty(message = "Name is required")
     @Size(message = "Max is 30 character", max = 30)
@@ -44,12 +44,18 @@ public class Product implements Serializable {
     private Set<Supplier> suppliers;
 
     @OneToMany
-    @JoinTable(name = "images", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "id"))
+    // @JoinTable(name = "fk_product_images", joinColumns = @JoinColumn(name = "id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
+    // @JoinTable(name = "fk_images_product", joinColumns = @JoinColumn(name = "id"))
+    @JoinColumn(name = "fk_images_product",referencedColumnName = "id")
     private List<Images> images;
 
-    public Product(String id,
+    public Product(Long id,
             String name,
-            String description, double price, Category category, Set<Supplier> suppliers, List<Images> images) {
+            String description,
+            double price,
+            Category category,
+            Set<Supplier> suppliers,
+            List<Images> images) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -63,11 +69,11 @@ public class Product implements Serializable {
 
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -116,7 +122,11 @@ public class Product implements Serializable {
     }
 
     public void setImages(List<Images> images) {
-        this.images = images;
+        if (!images.isEmpty())
+            this.images = images;
+        else
+            this.images = null;
+
     }
 
 }

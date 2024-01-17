@@ -1,10 +1,12 @@
 package com.example.demo_crud.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -47,34 +49,29 @@ public class ProductController {
     public ResponseEntity<ResponseDataPaging<List<Product>>> getData(
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(required = false, defaultValue = "") String order,
-            @RequestParam(defaultValue = "0") Integer start,
+            @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer limit) {
 
         ResponseDataPaging<List<Product>> responseData = new ResponseDataPaging<>();
-        Integer count = 0;
         try {
-            List<Product> data = new ArrayList<Product>();
-            data = productService.findDataByParams(keyword, order, start, limit);
-            count = productService.countData(keyword);
-            if (data.isEmpty()) {
-                responseData.setCount(count);
-                responseData.setStatus(true);
-                responseData.setData(null);
-                return new ResponseEntity<>(responseData, HttpStatus.OK);
-            }
+            Pageable pageable = PageRequest.of(page - 1, limit);
+            Page<Product> data = productService.findDataByParams(keyword, pageable);
             responseData.setStatus(true);
-            responseData.setData(data);
+            responseData.setData(data.getContent());
+            responseData.setCount(data.getNumberOfElements());
+            responseData.setCurrentPage(page);
+            responseData.setTotalPage(data.getTotalPages());
             return new ResponseEntity<>(responseData, HttpStatus.OK);
         } catch (Exception e) {
             responseData.setStatus(false);
             responseData.setData(null);
-            responseData.setCount(count);
+            responseData.setCount(0);
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseData<ResponseProduct>> create(@Valid @RequestBody  RequestProduct requestProduct,
+    public ResponseEntity<ResponseData<ResponseProduct>> create(@Valid @RequestBody RequestProduct requestProduct,
             Errors errors) {
         ResponseData<ResponseProduct> responseData = new ResponseData<>();
         try {
@@ -101,12 +98,12 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public Product findById(@PathVariable("id") String id) {
+    public Product findById(@PathVariable("id") Long id) {
         return productService.findById(id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseData<ResponseProduct>> update(@PathVariable String id,
+    public ResponseEntity<ResponseData<ResponseProduct>> update(@PathVariable Long id,
             @Valid @RequestBody RequestProduct requestProduct, Errors errors) {
         ResponseData<ResponseProduct> responseData = new ResponseData<>();
         Product product = modelMapper.map(requestProduct, Product.class);
@@ -129,12 +126,12 @@ public class ProductController {
     }
 
     @PostMapping("/add-suppliers/{id}")
-    public void addSupplier(@RequestBody Supplier supplier, @PathVariable("id") String productId) {
+    public void addSupplier(@RequestBody Supplier supplier, @PathVariable("id") Long productId) {
         productService.addSupplier(supplier, productId);
     }
 
     @DeleteMapping("/{id}")
-    public void removeOne(@PathVariable String id) {
+    public void removeOne(@PathVariable Long id) {
         productService.removeOne(id);
     }
 }

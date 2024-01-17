@@ -6,10 +6,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "images")
 public class Images implements Serializable {
 
     @Id
@@ -18,9 +18,9 @@ public class Images implements Serializable {
 
     private String path;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    // @ManyToOne
+    // @JoinColumn(name = "product_id")
+    // private Product product;
 
     public Images(String id, String path) {
         this.id = id;
